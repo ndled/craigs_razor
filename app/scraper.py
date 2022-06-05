@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-from datetime import datetime
 import logging
 import os
 import pdb
@@ -11,6 +10,8 @@ import typing
 import requests
 
 from bs4 import BeautifulSoup
+
+import db
 
 logging.basicConfig(
     filename="debug.log",
@@ -70,6 +71,7 @@ class Post(typing.NamedTuple):
     title: str
     posted_date: str
     location: str
+    origin:str
 
 def post_parser(posts):
     post_list = []
@@ -83,7 +85,8 @@ def post_parser(posts):
                 posted_date=post.find('time', class_= 'result-date')['datetime'],
                 url = post.find('a', class_='result-title hdrlnk')['href'],
                 title = post.find('a', class_='result-title hdrlnk').text,
-                location = post.find('span', class_='result-hood').text
+                location = post.find('span', class_='result-hood').text,
+                origin = "craigslist"
                 )
             )
         except:
@@ -96,7 +99,6 @@ def evaluate_post(post, search_terms):
     price_flag = False
     for word in post.title.split():
         if word.lower() in search_terms:
-            print("found in search_terms")
             searched_flag = True
     if post.price < 1600:
         price_flag = True
@@ -112,8 +114,16 @@ def filter_posts(post_list):
     for post in post_list:
         if evaluate_post(post,search_terms):
             filtered_post_list.append(post)
-    print(len(filtered_post_list))
-    print(filtered_post_list)
+    return filtered_post_list
+
+def update_db(posts):
+    conn = db.get_db()
+    for post in posts:
+        conn.execute(
+            "INSERT INTO posts (url, price, title, posted_date, location, origin) VALUES (?,?,?,?,?,?)",
+            (post.url, post.price,post.title, post.posted_date, post.location, post.origin))
+        conn.commit()
+    db.cleanup_db(conn)
 
 
 def main(*arguments):
@@ -121,11 +131,11 @@ def main(*arguments):
     parsed = parseargs(arguments[1:])
     if parsed.debug:
         sys.excepthook = idb_excepthook
+    db.initialize_db()
     posts = requester()
     post_list = post_parser(posts)
-    print(len(post_list))
-    print(post_list)
-    filter_posts(post_list)
+    filtered_post_list = filter_posts(post_list)
+    update_db(filtered_post_list)
 
 
 if __name__ == "__main__":

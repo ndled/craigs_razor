@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS posts;
+
+CREATE TABLE posts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  url TEXT UNIQUE NOT NULL,
+  price INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  posted_date TEXT NOT NULL,
+  location TEXT,
+  origin TEXT NOT NULL
+);
