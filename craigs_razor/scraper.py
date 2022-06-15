@@ -31,15 +31,21 @@ class Scraper:
         response = requests.get(self.search_url)
         html_soup = BeautifulSoup(response.text, 'html.parser')
         results_total = int(html_soup.find('div', class_= 'search-legend').find('span', class_='totalcount').text)
-        for page in range(0, results_total + 1, 120):
-            sleep(randint(1,5))
-            response = requests.get(self.search_url 
-                    + "s="
-                    + str(page)
-                    )
+        if results_total<120:
+            response = requests.get(self.search_url)
             html_soup = BeautifulSoup(response.text, 'html.parser')
             for post in html_soup.find_all('li', class_= 'result-row'):
-                self.raw_posts.append(post)
+                self.raw_posts.append(post)    
+        else:
+            for page in range(1, results_total + 1, 120):
+                sleep(randint(1,5))
+                response = requests.get(self.search_url 
+                        + "s="
+                        + str(page)
+                        )
+                html_soup = BeautifulSoup(response.text, 'html.parser')
+                for post in html_soup.find_all('li', class_= 'result-row'):
+                    self.raw_posts.append(post)
 
 
     def cl_post_parse(self)-> None:
