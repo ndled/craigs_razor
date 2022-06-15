@@ -17,7 +17,7 @@ import emailer
 logging.basicConfig(
     filename="debug.log",
     filemode="w",
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s",
 )
 console = logging.StreamHandler()
@@ -76,10 +76,8 @@ def main(*arguments):
     cl_scraper = scraper.Scraper(search_url='https://austin.craigslist.org/search/sss?query=%28library+cabinet%29+%7C+%28catalog+cabinet%29+%7C+%28card+catalog%29+%7C+%28card+file%29&min_price=&max_price=')
     cl_scraper.cl_request()
     cl_scraper.cl_post_parse()
-    print(cl_scraper.processed_posts)
     email_server = emailer.EmailServer(email_address=read_secrets()["email_address"], password=read_secrets()["email_password"])
     email = emailer.EmailServer.format_plain_text_email(subject = "Test" ,body = emailer.EmailServer.generate_plain_text_body(cl_scraper.processed_posts))
-    print(email)
     email_server.send_plain_text_email(receiver_email = "keldosh@gmail.com", message = email)
 
 if __name__ == "__main__":
