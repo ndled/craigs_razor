@@ -13,18 +13,10 @@ import scraper
 import emailer
 
 
-class Post(typing.NamedTuple):
-    price: float
-    url: str
-    title: str
-    posted_date: str
-    location: str
-    origin:str
-
 
 logging.basicConfig(
     filename="debug.log",
-    filemode="a",
+    filemode="w",
     level=logging.INFO,
     format="[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s",
 )
@@ -81,10 +73,12 @@ def main(*arguments):
     parsed = parseargs(arguments[1:])
     if parsed.debug:
         sys.excepthook = idb_excepthook
-    post_list = scraper.cl_post_parser(scraper.cl_requester())
-    print(post_list)
+    cl_scraper = scraper.Scraper(search_url='https://austin.craigslist.org/search/sss?query=%28library+cabinet%29+%7C+%28catalog+cabinet%29+%7C+%28card+catalog%29+%7C+%28card+file%29&min_price=&max_price=')
+    cl_scraper.cl_request()
+    cl_scraper.cl_post_parse()
+    print(cl_scraper.processed_posts)
     email_server = emailer.EmailServer(email_address=read_secrets()["email_address"], password=read_secrets()["email_password"])
-    email = emailer.EmailServer.format_plain_text_email(subject = "Test" ,body = emailer.EmailServer.generate_plain_text_body(post_list))
+    email = emailer.EmailServer.format_plain_text_email(subject = "Test" ,body = emailer.EmailServer.generate_plain_text_body(cl_scraper.processed_posts))
     print(email)
     email_server.send_plain_text_email(receiver_email = "keldosh@gmail.com", message = email)
 
