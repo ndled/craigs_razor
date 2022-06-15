@@ -81,3 +81,28 @@ class Scraper:
             except conn.IntegrityError:
                 logger.info(f"Skipping {post} because it's url is already in the database.")
         db.cleanup_db(conn)
+
+
+def evaluate_post(post, search_terms):
+    '''Example post evaluation'''
+    searched_flag = False
+    price_flag = False
+    for word in post.title.split():
+        if word.lower() in search_terms:
+            searched_flag = True
+    if post.price < 1600:
+        price_flag = True
+    if price_flag and searched_flag:
+        return True
+    else:
+        return False
+
+
+def filter_posts(post_list):
+    '''Example method to filter posts. Calls out to evaluate post and checks flags for whether or not to add to the filtered list'''
+    search_terms = ["library","card","catalog","cabinet"]
+    filtered_post_list = []
+    for post in post_list:
+        if evaluate_post(post,search_terms):
+            filtered_post_list.append(post)
+    return filtered_post_list
