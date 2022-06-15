@@ -20,7 +20,7 @@ class EmailServer:
         
     @staticmethod
     def format_plain_text_email(subject:str = "Default Subject", body: str = f"This is a default test message sent at {time.time()}") -> str:
-        return f"""\nSubject: {subject}\n\n{body}"""
+        return f"""Subject: {subject}\n\n{body}"""
 
     def send_plain_text_email(self, message: str, receiver_email: str) -> None:
         with smtplib.SMTP_SSL(self.email_server, port = self.port, context = ssl.create_default_context()) as server:
